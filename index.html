@@ -184,12 +184,12 @@
   <div class="kicker">POLYU · JIANGSU ALUMNI</div>
   <h1>与理同行 · 香聚有宁</h1>
   <div class="sub">江苏校友会活动时光轴 —— 串起我们的共同记忆</div>
-  <div class="span">2024.07 — 2026.08 ｜ 月度活动回顾全收录</div>
+  <div class="span"><span id="dateRange">2024.07 — 2026.08</span> ｜ 月度活动回顾全收录</div>
   <div class="stats" id="stats"></div>
 </header>
 
 <main class="tl-wrap">
-  <p class="tl-intro">自 2024 年 7 月 <b>成立大会</b> 启程，每一篇月度回顾都是一段共同走过的足迹。向下滑动，沿金色时光轴重温 <b>26</b> 个月、<b>171</b> 场活动的精彩瞬间。</p>
+  <p class="tl-intro">自 2024 年 7 月 <b>成立大会</b> 启程，每一篇月度回顾都是一段共同走过的足迹。向下滑动，沿金色时光轴重温 <b id="mSpan">26</b> 个月、<b id="aSpan">171</b> 场活动的精彩瞬间。</p>
   <div class="tl-controls">
     <div class="tl-pills" id="yearPills">
       <button class="pill active" data-year="all" type="button">全部</button>
@@ -487,7 +487,7 @@ window.REVIEWS = [
       {day:"7.25", title:"北大光华思享会", place:"南京", org:"南京中心", desc:"“光华智行·破局向新”北大光华南京思享会暨“服务民企365·新宁商大讲坛”第36期，校友会作为协办单位助力。"},
       {day:"8.12", title:"WorkBuddy智能体培训", place:"苏州", org:"酒旅分会", desc:"WorkBuddy企业版线下宣讲会校友会专属活动在苏州南园宾馆举办，联合南园宾馆、腾讯、奥莱维共同组织，聚焦智能体落地实操。"},
       {day:"8.14", title:"盛派研究院多智能体工作坊", place:"苏州", org:"人工智能分会", desc:"人工智能分会联合盛派研究院在苏州举办AI多智能体专题工作坊，含系统介绍、案例讲解与动手实操。"},
-      {day:"8.20", title:"AI 定制服装平台对接投资人", place:"无锡", org:"对外发展部", desc:"组织无锡研究院「面向定制服装的人工智能协同平台」与投资人专场洽谈，推动项目落地与资本对接。"},
+      {day:"8.20", title:"AI 定制服装平台对接投资人", place:"杭州", org:"对外发展部", desc:"组织无锡研究院「面向定制服装的人工智能协同平台」与投资人专场洽谈，推动项目落地与资本对接。"},
     ]
   },
 ];
@@ -498,11 +498,28 @@ window.REVIEWS = [
 (function(){
   const REVIEWS = window.REVIEWS || [];
   const totalItems = REVIEWS.reduce((s,r)=>s+(r.items?r.items.length:0),0);
+  // 日期范围（首块~末块 publish 实时推导）
+  const ymOf = d => { const [y,mo] = String(d).split("-").map(Number); return {y,mo}; };
+  const fmtYM = d => d.y + "." + String(d.mo).padStart(2,"0");
+  const first = ymOf(REVIEWS[0].publish), last = ymOf(REVIEWS[REVIEWS.length-1].publish);
+  const spanMonths = (last.y - first.y) * 12 + (last.mo - first.mo) + 1;
+  // 覆盖城市（从 items.place 实时统计，归一化叶子城市，排除非城市词）
+  const NONCITY = /^(直播|线上|线下|待定|多地|全体|江苏|浙江|广东|北京|上海|天津|重庆|香港|澳门|台湾)$/;
+  const citySet = new Set();
+  REVIEWS.forEach(r => (r.items||[]).forEach(it => {
+    String(it.place||"").split(/[·、/,，  ]/).forEach(t => { t=t.trim(); if(t && !NONCITY.test(t)) citySet.add(t); });
+  }));
+  const cityList = [...citySet].filter(a => ![...citySet].some(b => b!==a && a.endsWith(b) && a.length>b.length));
+  const cityCount = cityList.length;
+  // 回填顶部动态数字
+  const dr = document.getElementById("dateRange"); if(dr) dr.textContent = fmtYM(first) + " — " + fmtYM(last);
+  const ms = document.getElementById("mSpan"); if(ms) ms.textContent = spanMonths;
+  const as = document.getElementById("aSpan"); if(as) as.textContent = totalItems;
   const stats = [
-    {num:"2024.07", lab:"成立时间", count:false},
+    {num:fmtYM(first), lab:"成立时间", count:false},
     {num:REVIEWS.length, lab:"月度回顾", count:true},
     {num:totalItems, lab:"活动场次", count:true},
-    {num:"20+", lab:"覆盖城市", count:false},
+    {num:cityCount, lab:"覆盖城市", count:true},
   ];
   document.getElementById("stats").innerHTML = stats.map(s=>
     `<div class="stat"><div class="num" data-num="${s.count?s.num:''}">${s.num}</div><div class="lab">${s.lab}</div></div>`
