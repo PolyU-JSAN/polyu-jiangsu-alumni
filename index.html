@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="串起香港理工大学江苏校友会自2024年7月成立以来的共同记忆，每月活动回顾尽收于此。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="香港理工大学江苏校友会 · 活动时光轴" />
+  <meta property="og:description" content="串起香港理工大学江苏校友会自2024年7月成立以来的共同记忆，每月活动回顾尽收于此。" />
+  <meta property="og:url" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/" />
+  <meta property="og:image" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/assets/covers/0.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
 <title>香港理工大学江苏校友会 · 活动时光轴</title>
 <style>
   :root{
@@ -141,7 +148,7 @@
   }
   .tl-search input::placeholder{color:#B0B0B0;}
   .tl-search input:focus{background:#fff;border-color:var(--red);box-shadow:0 0 0 3px rgba(178,44,62,.12);}
-  .tl-search-row{display:flex;gap:10px;align-items:center;margin-top:12px;}
+  .tl-search-row{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;}
   .tl-expandall{
     display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
     min-width:68px;height:38px;padding:0 18px;border:none;border-radius:999px;
@@ -203,7 +210,7 @@
         <svg class="srch-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <input id="searchInput" type="search" placeholder="搜索活动 / 地点 / 分会" autocomplete="off" />
       </div>
-      <button class="tl-expandall" id="expandAll" type="button">展开全部 ▾</button>
+      <button class="tl-expandall" id="expandAll" type="button">展开明细 ▾</button>
     </div>
   </div>
   <section class="tl" id="tl">
@@ -218,7 +225,7 @@
 </main>
 
 <footer class="foot">
-  <img class="logo" src="assets/logo.png" alt="logo" />
+  <img class="logo" src="assets/logo.png" alt="logo" onerror="this.style.display='none'" />
   香港理工大学江苏校友会 · 活动时光轴<br/>
   数据来源：公众号「月度活动回顾」系列
 </footer>
@@ -444,10 +451,10 @@ window.REVIEWS = [
     year:2025, yearEnd:2026, monthLabel:"2025年12月—2026年2月", title:"江苏校友会25年12月~26年2月活动回顾", publish:"2026-02-28", link:"https://mp.weixin.qq.com/s/vAVF65NqjD7Hku8qO4V7zg",
     items:[
       {day:"2025.12.1", title:"香港大埔火灾捐赠与倡议", place:"香港", org:"酥梨公益", desc:"香港大埔发生严重火灾后，通过“酥梨公益”捐赠五万元人民币用于紧急救助受灾同胞，并呼吁校友与社会爱心人士汇聚力量帮助重建家园。"},
-      {day:"12.3", title:"参加南京研究院发展大会", place:"南京", org:"南京中心", desc:"组织多位在宁校友参加香港理工大学南京技术创新研究院主办的“宁港协同 共创未来”产学研协同发展大会，与近三百位嘉宾深入交流。"},
-      {day:"12.13", title:"清凉山徒步赏枫活动", place:"南京", org:"青年俱乐部", desc:"青年俱乐部在清凉山公园举办“徒步赏枫、暖聚叙旧”主题活动，校友于红枫胜景中漫步畅谈，共享淮扬风味午餐并游戏互动凝聚同窗情谊。"},
-      {day:"12.26", title:"参加工业园区数字贸易创新发展大会", place:"苏州", org:"苏州中心", desc:"苏州中心、MIS分会应邀出席苏州国际数据港数字贸易创新发展大会，通过政策解读、技术分享与产品展示，聚焦数智赋能与产业协同。"},
-      {day:"12.28", title:"多智能体线下工作坊（二）", place:"苏州", org:"人工智能分会", desc:"苏震巍会长在西安交大苏州研究院主讲第二次多智能体线下工作坊，聚焦提示词工程与知识库构建，并介绍实用的多智能体系统开发平台。"},
+      {day:"2025.12.3", title:"参加南京研究院发展大会", place:"南京", org:"南京中心", desc:"组织多位在宁校友参加香港理工大学南京技术创新研究院主办的“宁港协同 共创未来”产学研协同发展大会，与近三百位嘉宾深入交流。"},
+      {day:"2025.12.13", title:"清凉山徒步赏枫活动", place:"南京", org:"青年俱乐部", desc:"青年俱乐部在清凉山公园举办“徒步赏枫、暖聚叙旧”主题活动，校友于红枫胜景中漫步畅谈，共享淮扬风味午餐并游戏互动凝聚同窗情谊。"},
+      {day:"2025.12.26", title:"参加工业园区数字贸易创新发展大会", place:"苏州", org:"苏州中心", desc:"苏州中心、MIS分会应邀出席苏州国际数据港数字贸易创新发展大会，通过政策解读、技术分享与产品展示，聚焦数智赋能与产业协同。"},
+      {day:"2025.12.28", title:"多智能体线下工作坊（二）", place:"苏州", org:"人工智能分会", desc:"苏震巍会长在西安交大苏州研究院主讲第二次多智能体线下工作坊，聚焦提示词工程与知识库构建，并介绍实用的多智能体系统开发平台。"},
       {day:"2026.1.30", title:"康复医院2026迎新活动", place:"苏州", org:"酥梨公益", desc:"出席苏州市康复医院“非凡星程，PLAY之家”成立仪式暨迎新活动，与约50位孤独症儿童家庭共迎新春，校友会获授“公益之星”荣誉称号。"},
       {day:"2026.1.31", title:"参观苏州广电总台元宇宙空间", place:"苏州", org:"MIS分会", desc:"MIS联合培养项目携手校友会开展硕士课程校外实践，以“AR实景+AI图像叠加”为核心，沉浸体验苏州广电总台元宇宙空间最新应用成果。"},
       {day:"2026.1.31", title:"MIS 迎新年会", place:"苏州", org:"MIS分会", desc:"MIS分会会长柳仲平在MIS项目2026迎新年会作主题分享，师生校友与业界嘉宾探讨行业前沿趋势，并为表现突出的校友颁发荣誉证书。"},
@@ -479,7 +486,7 @@ window.REVIEWS = [
       {day:"6.18", title:"访问中方财团", place:"苏州", org:"对外合作与发展部", desc:"走进苏州中方财团控股股份有限公司，与总裁张峰等会见座谈，围绕科创项目投资、新能源行业合作交流，打通校友资源与产业资本对接通道。"},
       {day:"6.28", title:"智力运动联校比赛", place:"苏州", org:"智力运动俱乐部", desc:"联合哈工大、西安交大、中科大三所高校苏州校友会，在西安交大研究院举办高校校友掼蛋友谊赛，3轮组队赛制，近五十名校友参与。"},
       {day:"6.29", title:"理大无锡研究院座谈", place:"无锡", org:"无锡中心", desc:"“港智聚锡·科创赋能”系列活动在理大无锡科技创新研究院举办，校董会主席林大辉博士等校方代表出席，会长蒋一松分享校友资源对接平台搭建见解。"},
-      {day:"7.2~4", title:"携理大AI团队亮相CCE展会", place:"成都", org:"无锡中心", desc:"常务副会长徐家铭率南京技术创新研究院科研团队参展2026 CCE成都国际清洁技术与设备展，展示“密闭空间自主智能机器人”。"},
+      {day:"7.2–4", title:"携理大AI团队亮相CCE展会", place:"成都", org:"无锡中心", desc:"常务副会长徐家铭率南京技术创新研究院科研团队参展2026 CCE成都国际清洁技术与设备展，展示“密闭空间自主智能机器人”。"},
       {day:"7.10", title:"精英周人才签约", place:"苏州", org:"苏州中心", desc:"第十八届苏州国际精英创业周期间，苏州市委人才办与香港理工大学签署合作谅解备忘录，周志芳与郑子剑代表签约。"},
       {day:"7.10", title:"百校千企联盟首届理事会", place:"苏州", org:"苏州中心", desc:"苏州“百校千企”联盟第一届会员代表大会暨首届理事会召开，60所高校64家企业近170位代表参会，理大副校长郑子剑出席。"},
       {day:"7.16", title:"中科星图空天大会", place:"无锡", org:"低空经济分会", desc:"7月16日至17日，2026空天信息大会暨中科星图生态合伙人大会在无锡举办，赵江伟副会长一行受邀参会，共探低空经济前沿趋势。"},
@@ -527,10 +534,10 @@ window.REVIEWS = [
   ).join("");
 
   const tl = document.getElementById("tl");
-  const coverOf = i => {
-    if (i === 0) return "assets/covers/0.jpg";          // 成立大会（用户提供）
-    if (i >= 1 && i <= 17) return "assets/covers/" + i + ".jpg";
-    return null;                                          // 最新一期尚无公众号链接
+  const coverOf = (r, i) => {
+    if (i === 0) return "assets/covers/0.jpg";   // 成立大会（用户提供，勿改）
+    if (!r.link) return null;                     // 最新一期 link:null → 红色占位
+    return "assets/covers/" + i + ".jpg";         // 其余按索引取图，缺图自动 onerror 回退
   };
 
   let curYear = null, lastYearBlock = false;
@@ -545,7 +552,7 @@ window.REVIEWS = [
     const block = document.createElement("div");
     block.className = "tl-block open";
     block.dataset.year = r.year;
-    const cover = coverOf(i);
+    const cover = coverOf(r, i);
     const coverHtml = cover
       ? `<div class="tl-cover" style="background-image:url('${cover}')"></div>`
       : `<div class="tl-cover tl-cover--ph"><div class="ph-big">最新回顾</div><div class="ph-sub">原文即将发布</div></div>`;
@@ -583,7 +590,7 @@ window.REVIEWS = [
     if(!btn) return;
     const blocks = Array.from(document.querySelectorAll(".tl-block"));
     const allOpen = blocks.length>0 && blocks.every(b=>b.classList.contains("open"));
-    btn.innerHTML = allOpen ? `收起全部 ▴` : `展开全部 ▾`;
+    btn.innerHTML = allOpen ? `收起明细 ▴` : `展开明细 ▾`;
   }
   document.querySelectorAll(".tl-block").forEach(b=>{
     const btn = b.querySelector(".tl-toggle");
@@ -604,7 +611,7 @@ window.REVIEWS = [
   });
   updateExpandAllLabel();
 
-  /* ===== 展开全部 / 收起全部 ===== */
+  /* ===== 展开明细 / 收起明细 ===== */
   const expandAllBtn = document.getElementById("expandAll");
   if(expandAllBtn){
     expandAllBtn.addEventListener("click", ()=>{
@@ -694,8 +701,8 @@ window.REVIEWS = [
         empty = document.createElement("div");
         empty.id = "tlEmpty";
         empty.className = "tl-empty";
-        const intro = document.querySelector(".tl-intro");
-        if(intro && intro.parentNode) intro.parentNode.insertBefore(empty, intro.nextSibling);
+        const tlSection = document.getElementById("tl");
+        if(tlSection) tlSection.insertBefore(empty, tlSection.firstChild);
         else document.querySelector(".tl-wrap").appendChild(empty);
       }
       const yearTxt = selYear === "all" ? "" : ` · <b>${selYear}</b> 年`;
