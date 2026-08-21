@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>活动时光轴 · 动感版（预览）</title>
+<meta name="description" content="串起香港理工大学江苏校友会自2024年7月成立以来的共同记忆，每月活动回顾尽收于此。" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="香港理工大学江苏校友会 · 活动时光轴" />
+<meta property="og:description" content="串起香港理工大学江苏校友会自2024年7月成立以来的共同记忆，每月活动回顾尽收于此。" />
+<meta property="og:url" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/" />
+<meta property="og:image" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/assets/covers/0.jpg" />
+<title>香港理工大学江苏校友会 · 活动时光轴</title>
 <style>
   :root{
     --red:#B22C3E; --red-dark:#8C1F2E; --red-deep:#3A0816;
@@ -180,7 +186,7 @@
 
 <footer class="foot">
   <img class="logo" src="assets/logo.png" alt="logo" onerror="this.style.display='none'" />
-  香港理工大学江苏校友会 · 活动时光轴（动感预览版）<br/>
+  香港理工大学江苏校友会 · 活动时光轴<br/>
   数据来源：公众号「月度活动回顾」系列
 </footer>
 
@@ -691,30 +697,34 @@ window.REVIEWS = [
     gsap.to("#tlFill", {scaleY:1, ease:"none", scrollTrigger:{trigger:"#tl", start:"top 70%", end:"bottom 80%", scrub:0.6}});
 
     // 卡片微浮入 + 微缩放（无横向偏移；once 播完即释放触发器、clearProps 清内联 transform 恢复 CSS hover）
-    // 封面视差仅桌面端启用：移动端 19 张大图随滚动连续重绘是卡顿主因
-    const isMobile = window.matchMedia("(max-width:560px)").matches;
     // 触屏设备 tap 也会派发 mouseenter，会使封面莫名放大 —— 仅真正支持 hover 的指针才绑定
     const canHover = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
     gsap.utils.toArray(".tl-block").forEach((b,idx)=>{
       const card = b.querySelector(".tl-card");
       // 去掉 scale：缩放会让整张大卡片层每帧重新光栅化；缩短时长降低与滚动重叠的动画帧
-      gsap.from(card, {y:22, opacity:0, duration:.55, ease:"power2.out", clearProps:"all",
+      gsap.from(card, {y:30, opacity:0, duration:.6, ease:"power2.out", clearProps:"all",
         scrollTrigger:{trigger:b, start:"top 88%", once:true}});
+      // 时间轴节点弹出（很小的元素、开销极低，却是滚动中最直观的"动感"信号）
       const node = b.querySelector(".tl-node");
+      if(node){
+        node.style.transition = "none"; // 避免 CSS transition 缓冲 GSAP 每帧 transform
+        gsap.from(node, {scale:0, duration:.5, ease:"back.out(2)", clearProps:"all",
+          scrollTrigger:{trigger:b, start:"top 88%", once:true}});
+      }
       if(window.ScrollTrigger){
         window.ScrollTrigger.create({trigger:b, start:"top 60%", end:"bottom 40%",
           onToggle:self=> node.classList.toggle("active", self.isActive)});
       }
       const img = b.querySelector(".tl-cover-img");
       if(img){
-        if(!isMobile){
-          // scrub:0.8 平滑追赶：滚轮是离散事件，scrub:true 逐事件瞬时跳变会显得一顿一顿
-          // onToggle 按需挂 .px（will-change）：卡片在视差范围内才提升图层，离开即释放，
-          // 避免全部封面常驻 GPU 图层
-          gsap.fromTo(img, {yPercent:-5}, {yPercent:5, ease:"none",
-            scrollTrigger:{trigger:card, start:"top bottom", end:"bottom top", scrub:0.8,
-              onToggle:self=>img.classList.toggle("px", self.isActive)}});
-        }
+        // 封面视差：手机端也启用 —— 已切换 covers-dyn 小图集（1200px 约等于 3x 视网膜所需），
+        // 当初因 2000px 大图重绘卡顿而禁用手机视差的前提已不存在
+        // scrub:0.8 平滑追赶：滚轮是离散事件，scrub:true 逐事件瞬时跳变会显得一顿一顿
+        // onToggle 按需挂 .px（will-change）：卡片在视差范围内才提升图层，离开即释放，
+        // 避免全部封面常驻 GPU 图层
+        gsap.fromTo(img, {yPercent:-5}, {yPercent:5, ease:"none",
+          scrollTrigger:{trigger:card, start:"top bottom", end:"bottom top", scrub:0.8,
+            onToggle:self=>img.classList.toggle("px", self.isActive)}});
         // hover 缩放 + 卡片抬升改由 GSAP 驱动（CSS transition:transform 会缓冲 scrub 视差的每帧 transform，造成拖滞）
         if(canHover){
           card.addEventListener("mouseenter", ()=>{
