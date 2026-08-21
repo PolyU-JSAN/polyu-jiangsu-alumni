@@ -517,7 +517,7 @@ window.REVIEWS = [
     const cover = coverOf(r, i);
     const badge = i===0 ? `<span class="milestone-badge">开篇里程碑</span>` : "";
     const coverHtml = cover
-      ? `<div class="tl-cover">${badge}<img class="tl-cover-img" ${i===0?`src="${cover}"`:`data-src="${cover}"`} data-fb="${coverFallback(i)}" alt="" referrerpolicy="no-referrer" loading="${i===0?"eager":"lazy"}" decoding="async"${i===0?' fetchpriority="high"':''}></div>`
+      ? `<div class="tl-cover">${badge}<img class="tl-cover-img" ${i===0?`src="${cover}" loading="eager" fetchpriority="high"`:`data-src="${cover}"`} data-fb="${coverFallback(i)}" alt="" referrerpolicy="no-referrer" decoding="async"></div>`
       : `<div class="tl-cover tl-cover--ph"><div class="ph-big">最新回顾</div><div class="ph-sub">原文即将发布</div></div>`;
     const linkHtml = r.link
       ? `<a class="tl-link" href="${r.link}" target="_blank" rel="noopener">原文<span class="arw"></span></a>` : "";
@@ -547,27 +547,43 @@ window.REVIEWS = [
     tl.appendChild(block);
   });
 
-  // 封面提前加载：浏览器原生 loading=lazy 在微信内置 WebView 里触发时机偏保守（接近视口才请求），快速滚动时图还没加载；
-  // 改为 IO + 1500px rootMargin，提前 1.5 屏开始请求图。用户滚动到对应卡片时图早已在缓存里，无需等待
+  // 封面加载策略（对齐旧静态版"滚到即在"的体验）：
+  // 1) IO 提前 2.5 屏请求临近封面（rootMargin 2500px）。注意 img 不带原生 loading=lazy——
+  //    之前残留的 lazy 属性与 IO 叠加成双重懒加载：IO 赋 src 后原生 lazy 仍会把实际下载推迟到
+  //    浏览器自己的保守阈值（微信 XWeb 接近视口才下载），快速滚动时封面空白等待，观感明显变慢；
+  // 2) 主文档 load 后空闲 2s，后台按文档顺序并发 2 张预取其余全部封面（covers-dyn 共约 4MB，
+  //    比旧静态版全量下载 9.8MB 原图还省一半以上），用户滚到任意月份时图早已在缓存里。
+  const loadImg = img => { const s = img.dataset.src; if(s){ img.src = s; delete img.dataset.src; } };
   if("IntersectionObserver" in window){
     const io = new IntersectionObserver(entries=>{
       entries.forEach(en=>{
-        if(en.isIntersecting){
-          const img = en.target;
-          const src = img.dataset.src;
-          if(src){
-            img.src = src;
-            img.removeAttribute("data-src");
-          }
-          io.unobserve(img);
-        }
+        if(en.isIntersecting){ loadImg(en.target); io.unobserve(en.target); }
       });
-    }, {rootMargin:"1500px 0px", threshold:0});
+    }, {rootMargin:"2500px 0px", threshold:0});
     document.querySelectorAll(".tl-cover-img[data-src]").forEach(img=>io.observe(img));
   } else {
     // 兜底：直接全部加载
-    document.querySelectorAll(".tl-cover-img[data-src]").forEach(img=>{ img.src = img.dataset.src; img.removeAttribute("data-src"); });
+    document.querySelectorAll(".tl-cover-img[data-src]").forEach(loadImg);
   }
+  // 空闲后台预取：不抢首屏网络，load 后延迟 2s 再开始，逐张排队（并发 2，跳过已被 IO 加载的）
+  const prefetchCovers = ()=>{
+    const queue = Array.from(document.querySelectorAll(".tl-cover-img[data-src]"));
+    let idx = 0, inFlight = 0;
+    const done = ()=>{ inFlight--; next(); };
+    const next = ()=>{
+      while(inFlight < 2 && idx < queue.length){
+        const img = queue[idx++];
+        if(!img.dataset.src) continue;
+        inFlight++;
+        img.addEventListener("load", done, {once:true});
+        img.addEventListener("error", done, {once:true});
+        loadImg(img);
+      }
+    };
+    next();
+  };
+  if(document.readyState === "complete"){ setTimeout(prefetchCovers, 2000); }
+  else { window.addEventListener("load", ()=>setTimeout(prefetchCovers, 2000)); }
 
   // 封面加载失败 -> 先回退原图目录，再失败才红渐变占位（保留里程碑徽章，避免整体重写时误删）
   document.querySelectorAll(".tl-cover-img").forEach(img=>{
