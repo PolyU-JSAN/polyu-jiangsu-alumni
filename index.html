@@ -714,9 +714,9 @@ window.REVIEWS = [
       gsap.to(obj,{v:target,duration:dur,delay:.4,ease:"sine.inOut",onUpdate:()=>{el.textContent=Math.round(obj.v);}});
     });
 
-    // 主轴随滚动生长（红线为纯色、高度生长，无合成层）
-    // invalidateOnRefresh：布局变化（图片加载/折叠展开）触发 refresh 时重算 "100%" 终值，防止高度失准卡住
-    gsap.to("#tlFill", {height:"100%", ease:"none", invalidateOnRefresh:true, scrollTrigger:{trigger:"#tl", start:"top 70%", end:"bottom 80%", scrub:0.6}});
+    // 主轴红线已改由 rAF 直读滚动位置驱动（见文件末尾 initFill），不再用 ScrollTrigger scrub：
+    // 微信内置浏览器中 scrub 滚动时不更新高度（末端冻结、随滚动上移直至消失），
+    // rAF + getBoundingClientRect 不依赖 scroll 事件，微信 XWeb / WKWebView 均稳定工作
 
     // 卡片入场动画已移除（用户要求：保障卡片内容任何滚动速度下立即可见）
     // 触屏设备 tap 也会派发 mouseenter，会使封面莫名放大 —— 仅真正支持 hover 的指针才绑定
@@ -767,9 +767,29 @@ window.REVIEWS = [
     // 里程碑脉冲
     const ms2 = document.querySelector(".is-milestone .tl-node");
     if(ms2) ms2.classList.add("pulse");
-  } else {
-    document.getElementById("tlFill").style.height = "100%";
   }
+
+  /* ===== 主轴红线：rAF 每帧直读滚动位置驱动（核心体验，不依赖 GSAP/ScrollTrigger/scroll 事件） ===== */
+  // 触发区间与原 ScrollTrigger 一致：#tl 顶部到视口 70% 处开始生长，底部越过 80% 处长满
+  // 每帧重算 rect：图片加载、折叠/展开、地址栏收起等布局变化自动生效（替代 invalidateOnRefresh）
+  (function initFill(){
+    const fill = document.getElementById("tlFill");
+    const tl = document.getElementById("tl");
+    if(!fill || !tl) return;
+    let last = -1;
+    function tick(){
+      const r = tl.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      const passed = vh * 0.7 - r.top;              // #tl 顶部已滚过起始线的距离
+      const total = r.height + vh * 0.1;            // 起止线之间的完整滚动距离
+      let p = total > 0 ? passed / total : 1;
+      if(p < 0) p = 0; else if(p > 1) p = 1;
+      const h = Math.round(r.height * p);
+      if(h !== last){ last = h; fill.style.height = h + "px"; }  // 高度不变则不写样式
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
 })();
 </script>
 </body>
