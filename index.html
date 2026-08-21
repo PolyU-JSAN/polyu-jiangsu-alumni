@@ -43,9 +43,12 @@
   .tl-intro{text-align:left;max-width:900px;margin:10px auto 24px;padding:0 18px;color:var(--ink-2);font-size:14px;line-height:1.95;}
   .tl-intro b{color:var(--red);}
   .tl{position:relative;padding:6px 0 6px;}
-  .tl::before{content:"";position:absolute;left:30px;top:0;bottom:0;width:2px;background:linear-gradient(var(--gold),var(--gold-soft));}
+  /* 主轴两条线必须是纯色：页面总高 3 万+ px，渐变背景会被 iOS 整段光栅化成超大纹理，
+     超出 GPU 纹理尺寸上限后整段截断不绘制（红线滚到后半段"越滚越短直至消失"的根因）；
+     纯色背景按可视区域分瓦绘制，无高度上限 */
+  .tl::before{content:"";position:absolute;left:30px;top:0;bottom:0;width:2px;background:var(--gold);}
   .tl::after{content:"";position:absolute;left:26px;bottom:-2px;width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(178,44,62,.18);}
-  .tl-fill{position:absolute;left:30px;top:0;height:0;width:2px;border-radius:1px;background:linear-gradient(var(--gold),var(--red));z-index:1;}
+  .tl-fill{position:absolute;left:30px;top:0;height:0;width:2px;border-radius:1px;background:var(--red);z-index:1;}
 
   .tl-year{position:relative;padding-left:64px;margin:8px 0 16px;}
   .tl-year-dot{position:absolute;left:14px;top:-2px;width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px var(--bg),0 4px 10px rgba(138,44,62,.3);z-index:3;}
@@ -711,28 +714,23 @@ window.REVIEWS = [
       gsap.to(obj,{v:target,duration:dur,delay:.4,ease:"sine.inOut",onUpdate:()=>{el.textContent=Math.round(obj.v);}});
     });
 
-    // 主轴随滚动生长
-    // 红线用高度生长而非 scaleY：页面总高 3 万+ px，超长元素做 transform 缩放会在 iOS 上撑爆合成层纹理上限导致整条线消失；
-    // 高度方式无合成层、out-of-flow 元素改高度不触发兄弟重排，渐变也始终铺满当前长度（线尖恒为红色）
-    gsap.to("#tlFill", {height:"100%", ease:"none", scrollTrigger:{trigger:"#tl", start:"top 70%", end:"bottom 80%", scrub:0.6}});
+    // 主轴随滚动生长（红线为纯色、高度生长，无合成层）
+    // invalidateOnRefresh：布局变化（图片加载/折叠展开）触发 refresh 时重算 "100%" 终值，防止高度失准卡住
+    gsap.to("#tlFill", {height:"100%", ease:"none", invalidateOnRefresh:true, scrollTrigger:{trigger:"#tl", start:"top 70%", end:"bottom 80%", scrub:0.6}});
 
-    // 卡片微浮入 + 微缩放（无横向偏移；once 播完即释放触发器、clearProps 清内联 transform 恢复 CSS hover）
+    // 卡片入场动画已移除（用户要求：保障卡片内容任何滚动速度下立即可见）
     // 触屏设备 tap 也会派发 mouseenter，会使封面莫名放大 —— 仅真正支持 hover 的指针才绑定
     const canHover = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
     gsap.utils.toArray(".tl-block").forEach((b,idx)=>{
       const card = b.querySelector(".tl-card");
-      // 卡片入场只滑入 y:30、不动 opacity：屏幕外启动动画时整张卡片透明 → 用户快速滑动看到「拉完才显示」。
-      // 节点同理只放大、不透明度 0
-      gsap.from(card, {y:30, duration:.45, ease:"power2.out", clearProps:"all",
-        scrollTrigger:{trigger:b, start:"top 95%", once:true}});
-      // 时间轴节点弹出（很小的元素、开销极低，却是滚动中最直观的"动感"信号）
       const node = b.querySelector(".tl-node");
+      // 时间轴节点弹出（很小的元素、开销极低，却是滚动中最直观的"动感"信号）
       if(node){
         node.style.transition = "none"; // 避免 CSS transition 缓冲 GSAP 每帧 transform
         gsap.from(node, {scale:0.4, duration:.45, ease:"back.out(2)", clearProps:"all",
           scrollTrigger:{trigger:b, start:"top 95%", once:true}});
       }
-      if(window.ScrollTrigger){
+      if(window.ScrollTrigger && node){
         window.ScrollTrigger.create({trigger:b, start:"top 60%", end:"bottom 40%",
           onToggle:self=> node.classList.toggle("active", self.isActive)});
       }
