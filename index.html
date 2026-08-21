@@ -724,15 +724,12 @@ window.REVIEWS = [
     gsap.utils.toArray(".tl-block").forEach((b,idx)=>{
       const card = b.querySelector(".tl-card");
       const node = b.querySelector(".tl-node");
-      // 时间轴节点弹出（很小的元素、开销极低，却是滚动中最直观的"动感"信号）
-      if(node){
-        node.style.transition = "none"; // 避免 CSS transition 缓冲 GSAP 每帧 transform
-        gsap.from(node, {scale:0.4, duration:.45, ease:"back.out(2)", clearProps:"all",
-          scrollTrigger:{trigger:b, start:"top 95%", once:true}});
-      }
-      if(window.ScrollTrigger && node){
-        window.ScrollTrigger.create({trigger:b, start:"top 60%", end:"bottom 40%",
-          onToggle:self=> node.classList.toggle("active", self.isActive)});
+      // 节点尺寸统一为 scale(1)：移除 ScrollTrigger scale 弹出（微信中 once 不触发会卡在 .4 致偏小）；
+      // active 高亮改由 IntersectionObserver 驱动（可靠、不依赖 scroll 事件，微信/浏览器行为一致）
+      if(node && 'IntersectionObserver' in window){
+        new IntersectionObserver((es)=>{
+          es.forEach(e=> node.classList.toggle('active', e.isIntersecting));
+        }, {rootMargin:'-45% 0px -45% 0px', threshold:0}).observe(b);
       }
       const img = b.querySelector(".tl-cover-img");
       if(img){
