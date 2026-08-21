@@ -130,10 +130,6 @@
     .tl-year-dot{left:6px;}
     .tl-cover{height:160px;}
   }
-  @media (prefers-reduced-motion:reduce){
-    .tl-fill{transform:scaleY(1)!important;}
-    .tl-node.pulse::before{animation:none;opacity:0;}
-  }
 </style>
 <!-- 隐藏访问统计（百度统计）：不显示任何数字，仅后台记录访问数与来源渠道 -->
 <script>
@@ -574,7 +570,7 @@ window.REVIEWS = [
   function animateActs(block, open){
     const acts = block.querySelector(".acts");
     if(!acts) return;
-    if(window.gsap && !window.matchMedia("(prefers-reduced-motion:reduce)").matches){
+    if(window.gsap){
       if(open){
         acts.style.display = "block";
         window.gsap.fromTo(acts, {height:0, opacity:0}, {height:"auto", opacity:1, duration:.5, ease:"back.out(1.4)", onComplete:()=>{ acts.style.height=""; scheduleSTRefresh(); }});
@@ -671,9 +667,8 @@ window.REVIEWS = [
   });
   searchInput.addEventListener("input", ()=>{ curQuery = searchInput.value; applyFilter(); });
 
-  /* ===== 动感动画（GSAP） ===== */
-  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-  if(window.gsap && !reduce){
+  /* ===== 动感动画（GSAP）：不检查 prefers-reduced-motion —— 页面动效为核心体验，任何系统设置下都照常播放 ===== */
+  if(window.gsap){
     const { gsap } = window;
     if(window.ScrollTrigger){
       gsap.registerPlugin(window.ScrollTrigger);
