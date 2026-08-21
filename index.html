@@ -9,6 +9,7 @@
 <meta property="og:description" content="串起香港理工大学江苏校友会自2024年7月成立以来的共同记忆，每月活动回顾尽收于此。" />
 <meta property="og:url" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/" />
 <meta property="og:image" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/assets/covers/0.jpg" />
+<link rel="icon" href="data:," />
 <title>香港理工大学江苏校友会 · 活动时光轴</title>
 <style>
   :root{
@@ -44,7 +45,7 @@
   .tl{position:relative;padding:6px 0 6px;}
   .tl::before{content:"";position:absolute;left:30px;top:0;bottom:0;width:2px;background:linear-gradient(var(--gold),var(--gold-soft));}
   .tl::after{content:"";position:absolute;left:26px;bottom:-2px;width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(178,44,62,.18);}
-  .tl-fill{position:absolute;left:30px;top:0;bottom:0;width:2px;border-radius:1px;background:linear-gradient(var(--gold),var(--red));transform-origin:top center;transform:scaleY(0);will-change:transform;z-index:1;}
+  .tl-fill{position:absolute;left:30px;top:0;height:0;width:2px;border-radius:1px;background:linear-gradient(var(--gold),var(--red));z-index:1;}
 
   .tl-year{position:relative;padding-left:64px;margin:8px 0 16px;}
   .tl-year-dot{position:absolute;left:14px;top:-2px;width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px var(--bg),0 4px 10px rgba(138,44,62,.3);z-index:3;}
@@ -513,7 +514,7 @@ window.REVIEWS = [
     const cover = coverOf(r, i);
     const badge = i===0 ? `<span class="milestone-badge">开篇里程碑</span>` : "";
     const coverHtml = cover
-      ? `<div class="tl-cover">${badge}<img class="tl-cover-img" src="${cover}" data-fb="${coverFallback(i)}" alt="" referrerpolicy="no-referrer" loading="${i===0?"eager":"lazy"}" decoding="async"${i===0?' fetchpriority="high"':''}></div>`
+      ? `<div class="tl-cover">${badge}<img class="tl-cover-img" ${i===0?`src="${cover}"`:`data-src="${cover}"`} data-fb="${coverFallback(i)}" alt="" referrerpolicy="no-referrer" loading="${i===0?"eager":"lazy"}" decoding="async"${i===0?' fetchpriority="high"':''}></div>`
       : `<div class="tl-cover tl-cover--ph"><div class="ph-big">最新回顾</div><div class="ph-sub">原文即将发布</div></div>`;
     const linkHtml = r.link
       ? `<a class="tl-link" href="${r.link}" target="_blank" rel="noopener">原文<span class="arw"></span></a>` : "";
@@ -542,6 +543,28 @@ window.REVIEWS = [
       </div>`;
     tl.appendChild(block);
   });
+
+  // 封面提前加载：浏览器原生 loading=lazy 在微信内置 WebView 里触发时机偏保守（接近视口才请求），快速滚动时图还没加载；
+  // 改为 IO + 1500px rootMargin，提前 1.5 屏开始请求图。用户滚动到对应卡片时图早已在缓存里，无需等待
+  if("IntersectionObserver" in window){
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(en=>{
+        if(en.isIntersecting){
+          const img = en.target;
+          const src = img.dataset.src;
+          if(src){
+            img.src = src;
+            img.removeAttribute("data-src");
+          }
+          io.unobserve(img);
+        }
+      });
+    }, {rootMargin:"1500px 0px", threshold:0});
+    document.querySelectorAll(".tl-cover-img[data-src]").forEach(img=>io.observe(img));
+  } else {
+    // 兜底：直接全部加载
+    document.querySelectorAll(".tl-cover-img[data-src]").forEach(img=>{ img.src = img.dataset.src; img.removeAttribute("data-src"); });
+  }
 
   // 封面加载失败 -> 先回退原图目录，再失败才红渐变占位（保留里程碑徽章，避免整体重写时误删）
   document.querySelectorAll(".tl-cover-img").forEach(img=>{
@@ -689,22 +712,25 @@ window.REVIEWS = [
     });
 
     // 主轴随滚动生长
-    gsap.to("#tlFill", {scaleY:1, ease:"none", scrollTrigger:{trigger:"#tl", start:"top 70%", end:"bottom 80%", scrub:0.6}});
+    // 红线用高度生长而非 scaleY：页面总高 3 万+ px，超长元素做 transform 缩放会在 iOS 上撑爆合成层纹理上限导致整条线消失；
+    // 高度方式无合成层、out-of-flow 元素改高度不触发兄弟重排，渐变也始终铺满当前长度（线尖恒为红色）
+    gsap.to("#tlFill", {height:"100%", ease:"none", scrollTrigger:{trigger:"#tl", start:"top 70%", end:"bottom 80%", scrub:0.6}});
 
     // 卡片微浮入 + 微缩放（无横向偏移；once 播完即释放触发器、clearProps 清内联 transform 恢复 CSS hover）
     // 触屏设备 tap 也会派发 mouseenter，会使封面莫名放大 —— 仅真正支持 hover 的指针才绑定
     const canHover = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
     gsap.utils.toArray(".tl-block").forEach((b,idx)=>{
       const card = b.querySelector(".tl-card");
-      // 去掉 scale：缩放会让整张大卡片层每帧重新光栅化；缩短时长降低与滚动重叠的动画帧
-      gsap.from(card, {y:30, opacity:0, duration:.6, ease:"power2.out", clearProps:"all",
-        scrollTrigger:{trigger:b, start:"top 88%", once:true}});
+      // 卡片入场只滑入 y:30、不动 opacity：屏幕外启动动画时整张卡片透明 → 用户快速滑动看到「拉完才显示」。
+      // 节点同理只放大、不透明度 0
+      gsap.from(card, {y:30, duration:.45, ease:"power2.out", clearProps:"all",
+        scrollTrigger:{trigger:b, start:"top 95%", once:true}});
       // 时间轴节点弹出（很小的元素、开销极低，却是滚动中最直观的"动感"信号）
       const node = b.querySelector(".tl-node");
       if(node){
         node.style.transition = "none"; // 避免 CSS transition 缓冲 GSAP 每帧 transform
-        gsap.from(node, {scale:0, duration:.5, ease:"back.out(2)", clearProps:"all",
-          scrollTrigger:{trigger:b, start:"top 88%", once:true}});
+        gsap.from(node, {scale:0.4, duration:.45, ease:"back.out(2)", clearProps:"all",
+          scrollTrigger:{trigger:b, start:"top 95%", once:true}});
       }
       if(window.ScrollTrigger){
         window.ScrollTrigger.create({trigger:b, start:"top 60%", end:"bottom 40%",
@@ -744,7 +770,7 @@ window.REVIEWS = [
     const ms2 = document.querySelector(".is-milestone .tl-node");
     if(ms2) ms2.classList.add("pulse");
   } else {
-    document.getElementById("tlFill").style.transform = "scaleY(1)";
+    document.getElementById("tlFill").style.height = "100%";
   }
 })();
 </script>
