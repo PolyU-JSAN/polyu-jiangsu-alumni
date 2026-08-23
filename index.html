@@ -157,7 +157,7 @@
 </header>
 
 <main class="tl-wrap">
-  <p class="tl-intro">自 2024 年 7 月 <b>成立大会</b> 启程，每一篇月度回顾都是一段共同走过的足迹。向下滑动，沿金色时光轴重温 <b id="mSpan">26</b> 个月、<b id="aSpan">171</b> 场活动的精彩瞬间。</p>
+  <p class="tl-intro">自 2024 年 7 月 <b>成立大会</b> 启程，每一篇月度回顾都是一段共同走过的足迹。向下滑动，沿金色时光轴重温 <b id="mSpan">26</b> 个月、<b id="aSpan">170</b> 场活动的精彩瞬间。</p>
   <div class="tl-controls">
     <div class="tl-pills" id="yearPills">
       <button class="pill active" data-year="all" type="button">全部</button>
@@ -457,7 +457,6 @@ window.REVIEWS = [
       {day:"7.25", title:"北大光华思享会", place:"南京", org:"南京中心", desc:"“光华智行·破局向新”北大光华南京思享会暨“服务民企365·新宁商大讲坛”第36期，校友会作为协办单位助力。"},
       {day:"8.12", title:"WorkBuddy智能体培训", place:"苏州", org:"酒旅分会", desc:"WorkBuddy企业版线下宣讲会校友会专属活动在苏州南园宾馆举办，联合南园宾馆、腾讯、奥莱维共同组织，聚焦智能体落地实操。"},
       {day:"8.14", title:"盛派研究院多智能体工作坊", place:"苏州", org:"人工智能分会", desc:"人工智能分会联合盛派研究院在苏州举办AI多智能体专题工作坊，含系统介绍、案例讲解与动手实操。"},
-      {day:"8.20", title:"AI 定制服装平台对接投资人", place:"杭州", org:"对外发展部", desc:"组织无锡研究院「面向定制服装的人工智能协同平台」与投资人专场洽谈，推动项目落地与资本对接。"},
     ]
   },
 ];
@@ -493,13 +492,19 @@ window.REVIEWS = [
   ).join("");
 
   const tl = document.getElementById("tl");
+  // ★ 封面走 jsDelivr CDN：GitHub Pages 边缘节点在新加坡（x-served-by: cache-sin），
+  //   国内直连中新线路极慢且 max-age 仅 600s，18 张封面 4.1MB 每次都可能全量重下；
+  //   jsDelivr 在国内可达性好（海报管线已验证），仓库公开、已确认代理同步。
+  //   回退链：jsDelivr → 同源 covers-dyn（GitHub Pages）→ 同源 covers 原图 → 红渐变占位
+  const COVER_CDN = "https://cdn.jsdelivr.net/gh/PolyU-JSAN/polyu-jiangsu-alumni@main/assets/covers-dyn/";
   // 动感版专用小图集（长边 1200，约为原 2000px 像素量的 36%）：
   // 封面视差每帧都要合成/重光栅纹理，小图直接把这条路径的开销砍掉一大半
   const coverOf = (r, i) => {
-    if (i === 0) return "assets/covers-dyn/0.jpg";
+    if (i === 0) return COVER_CDN + "0.jpg";
     if (!r.link) return null;
-    return "assets/covers-dyn/" + i + ".jpg";
+    return COVER_CDN + i + ".jpg";
   };
+  const coverDynFallback = (i) => "assets/covers-dyn/" + i + ".jpg";
   const coverFallback = (i) => "assets/covers/" + i + ".jpg";
 
   let curYear = null;
@@ -517,7 +522,7 @@ window.REVIEWS = [
     const cover = coverOf(r, i);
     const badge = i===0 ? `<span class="milestone-badge">开篇里程碑</span>` : "";
     const coverHtml = cover
-      ? `<div class="tl-cover">${badge}<img class="tl-cover-img" ${i===0?`src="${cover}" loading="eager" fetchpriority="high"`:`data-src="${cover}"`} data-fb="${coverFallback(i)}" alt="" referrerpolicy="no-referrer" decoding="async"></div>`
+      ? `<div class="tl-cover">${badge}<img class="tl-cover-img" ${i===0?`src="${cover}" loading="eager" fetchpriority="high"`:`data-src="${cover}"`} data-dfb="${coverDynFallback(i)}" data-fb="${coverFallback(i)}" alt="" referrerpolicy="no-referrer" decoding="async"></div>`
       : `<div class="tl-cover tl-cover--ph"><div class="ph-big">最新回顾</div><div class="ph-sub">原文即将发布</div></div>`;
     const linkHtml = r.link
       ? `<a class="tl-link" href="${r.link}" target="_blank" rel="noopener">原文<span class="arw"></span></a>` : "";
@@ -553,7 +558,23 @@ window.REVIEWS = [
   //    浏览器自己的保守阈值（微信 XWeb 接近视口才下载），快速滚动时封面空白等待，观感明显变慢；
   // 2) 主文档 load 后空闲 2s，后台按文档顺序并发 2 张预取其余全部封面（covers-dyn 共约 4MB，
   //    比旧静态版全量下载 9.8MB 原图还省一半以上），用户滚到任意月份时图早已在缓存里。
-  const loadImg = img => { const s = img.dataset.src; if(s){ img.src = s; delete img.dataset.src; } };
+  // ★ 回退链取源：jsDelivr CDN → 同源 covers-dyn（GitHub Pages）→ 同源 covers 原图 → null（换占位）
+  const nextFallback = img => {
+    if(img.dataset.dfb){ const u = img.dataset.dfb; delete img.dataset.dfb; return u; }
+    if(img.dataset.fb){ const u = img.dataset.fb; delete img.dataset.fb; return u; }
+    return null;
+  };
+  // ★ 看门狗：CDN 源 4s 未完成即切下一级。jsDelivr 异常时多表现为长时间挂起而非快速报错，
+  //   单靠 onerror 要等浏览器 TCP 超时（30s+）才回退；看门狗把最坏等待压到 4s
+  const armWatchdog = img => {
+    setTimeout(()=>{
+      if(img.complete && img.naturalWidth > 0) return;
+      if(!(img.currentSrc || img.src || "").includes("jsdelivr")) return; // 已在本地源则不管
+      const fb = nextFallback(img);
+      if(fb){ img.src = fb; }
+    }, 4000);
+  };
+  const loadImg = img => { const s = img.dataset.src; if(s){ img.src = s; delete img.dataset.src; armWatchdog(img); } };
   if("IntersectionObserver" in window){
     const io = new IntersectionObserver(entries=>{
       entries.forEach(en=>{
@@ -569,12 +590,13 @@ window.REVIEWS = [
   const prefetchCovers = ()=>{
     const queue = Array.from(document.querySelectorAll(".tl-cover-img[data-src]"));
     let idx = 0, inFlight = 0;
-    const done = ()=>{ inFlight--; next(); };
     const next = ()=>{
       while(inFlight < 2 && idx < queue.length){
         const img = queue[idx++];
         if(!img.dataset.src) continue;
         inFlight++;
+        let settled = false; // 看门狗切换 src 可能引发 error+load 双事件，防重复结算
+        const done = ()=>{ if(settled) return; settled = true; inFlight--; next(); };
         img.addEventListener("load", done, {once:true});
         img.addEventListener("error", done, {once:true});
         loadImg(img);
@@ -585,15 +607,13 @@ window.REVIEWS = [
   if(document.readyState === "complete"){ setTimeout(prefetchCovers, 2000); }
   else { window.addEventListener("load", ()=>setTimeout(prefetchCovers, 2000)); }
 
-  // 封面加载失败 -> 先回退原图目录，再失败才红渐变占位（保留里程碑徽章，避免整体重写时误删）
+  // 封面加载失败回退链：jsDelivr CDN → 同源 covers-dyn → 同源 covers 原图 → 红渐变占位
+  // （保留里程碑徽章，避免整体重写时误删）
   document.querySelectorAll(".tl-cover-img").forEach(img=>{
+    if(img.getAttribute("src")) armWatchdog(img); // 首图 eager 直载，同样看护
     img.addEventListener("error", ()=>{
-      const fb = img.dataset.fb;
-      if(fb){
-        delete img.dataset.fb;
-        img.src = fb;
-        return;
-      }
+      const fb = nextFallback(img);
+      if(fb){ img.src = fb; return; }
       const box = img.closest(".tl-cover");
       if(!box) return;
       markLayout(); // 占位替换改变卡片高度
