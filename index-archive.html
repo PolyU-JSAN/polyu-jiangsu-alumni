@@ -8,7 +8,7 @@
   <meta property="og:title" content="香港理工大学江苏校友会 · 活动时光轴" />
   <meta property="og:description" content="串起香港理工大学江苏校友会自2024年7月成立以来的共同记忆，每月活动回顾尽收于此。" />
   <meta property="og:url" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/" />
-  <meta property="og:image" content="https://polyu-jsan.github.io/polyu-jiangsu-alumni/assets/covers/0.jpg" />
+  <meta property="og:image" content="https://cdn.jsdelivr.net/gh/PolyU-JSAN/polyu-jiangsu-alumni@main/assets/covers/0.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
 <title>香港理工大学江苏校友会 · 活动时光轴</title>
 <style>
@@ -483,7 +483,6 @@ window.REVIEWS = [
       {day:"7.25", title:"北大光华思享会", place:"南京", org:"南京中心", desc:"“光华智行·破局向新”北大光华南京思享会暨“服务民企365·新宁商大讲坛”第36期，校友会作为协办单位助力。"},
       {day:"8.12", title:"WorkBuddy智能体培训", place:"苏州", org:"酒旅分会", desc:"WorkBuddy企业版线下宣讲会校友会专属活动在苏州南园宾馆举办，联合南园宾馆、腾讯、奥莱维共同组织，聚焦智能体落地实操。"},
       {day:"8.14", title:"盛派研究院多智能体工作坊", place:"苏州", org:"人工智能分会", desc:"人工智能分会联合盛派研究院在苏州举办AI多智能体专题工作坊，含系统介绍、案例讲解与动手实操。"},
-      {day:"8.20", title:"AI 定制服装平台对接投资人", place:"杭州", org:"对外发展部", desc:"组织无锡研究院「面向定制服装的人工智能协同平台」与投资人专场洽谈，推动项目落地与资本对接。"},
     ]
   },
 ];
@@ -522,10 +521,13 @@ window.REVIEWS = [
   ).join("");
 
   const tl = document.getElementById("tl");
+  // ★ 封面走 jsDelivr CDN（GitHub Pages 新加坡边缘国内直连极慢，2000px 原图共 9.8MB 更甚）；
+  //   CSS background-image 无 onerror 回退，若 jsDelivr 异常可改回相对路径 "assets/covers/"
+  const COVER_CDN = "https://cdn.jsdelivr.net/gh/PolyU-JSAN/polyu-jiangsu-alumni@main/assets/covers/";
   const coverOf = (r, i) => {
-    if (i === 0) return "assets/covers/0.jpg";   // 成立大会（用户提供，勿改）
-    if (!r.link) return null;                     // 最新一期 link:null → 红色占位
-    return "assets/covers/" + i + ".jpg";         // 其余按索引取图，缺图自动 onerror 回退
+    if (i === 0) return COVER_CDN + "0.jpg";   // 成立大会（用户提供，勿改）
+    if (!r.link) return null;                  // 最新一期 link:null → 红色占位
+    return COVER_CDN + i + ".jpg";             // 其余按索引取图
   };
 
   let curYear = null, lastYearBlock = false;
