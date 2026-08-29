@@ -1633,8 +1633,8 @@ window.REVIEWS = [
   const coverCdnUrl = (i) => COVER_CDNS[0] + i + ".jpg";
   const coverOf = (r, i) => {
     if (i === 0) return coverCdnUrl(0);
-    if (!r.link) return null;
-    return coverCdnUrl(i);
+    if (r.cover) return coverCdnUrl(i);
+    return null;
   };
   const coverDynFallback = (i) => "assets/covers-dyn/" + i + ".jpg";
   const coverFallback = (i) => "assets/covers/" + i + ".jpg";
