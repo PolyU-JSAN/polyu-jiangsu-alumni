@@ -1633,6 +1633,7 @@ window.REVIEWS = [
   const coverCdnUrl = (i) => COVER_CDNS[0] + i + ".jpg";
   const coverOf = (r, i) => {
     if (i === 0) return coverCdnUrl(0);
+    if (r.link) return coverCdnUrl(i);
     if (r.cover) return coverCdnUrl(i);
     return null;
   };
