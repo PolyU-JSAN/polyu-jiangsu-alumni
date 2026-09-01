@@ -1293,8 +1293,8 @@ window.REVIEWS = [
     "yearEnd": 2026,
     "monthLabel": "2026年6月—8月",
     "title": "江苏校友会6~8月活动回顾",
-    "publish": "2026-08-17",
-    "link": null,
+    "publish": "2026-08-29",
+    "link": "https://mp.weixin.qq.com/s/uRvlvW2iPcF-Hp7fGvpSMw",
     "cover": "18",
     "items": [
       {
